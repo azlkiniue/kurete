@@ -34,9 +34,13 @@ const tag = (v: string) => `https://github.com/kubernetes/kubernetes/releases/ta
                   )}
                 </td>
                 <td class="muted nowrap">
-                  <abbr class="approx" title="Approximate — derived from Kubernetes' ~14-month support policy">
-                    ≈{formatDate(r.releaseDate)}
-                  </abbr>
+                  {r.releaseDateExact ? (
+                    formatDate(r.releaseDate)
+                  ) : (
+                    <abbr class="approx" title="Approximate — derived from Kubernetes' ~14-month support policy">
+                      ≈{formatDate(r.releaseDate)}
+                    </abbr>
+                  )}
                 </td>
                 <td class="nowrap">{formatDate(r.eolDate)}</td>
                 <td class="since nowrap" data-since={r.eolDate}>{sinceText(r.eolDate, now)}</td>

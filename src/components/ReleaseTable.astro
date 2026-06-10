@@ -11,7 +11,7 @@ interface Row {
   releaseDate: string;
   maintenanceStartDate: string;
   eolDate: string;
-  derived: boolean;
+  releaseExact: boolean;
   latest: { version: string; date: string | null } | null;
   isEol: boolean;
 }
@@ -23,7 +23,7 @@ const rows: Row[] = [
     releaseDate: r.releaseDate,
     maintenanceStartDate: r.maintenanceStartDate,
     eolDate: r.eolDate,
-    derived: r.derived,
+    releaseExact: true,
     latest: r.latestPatch ? { version: r.latestPatch.version, date: r.latestPatch.date } : null,
     isEol: false,
   })),
@@ -33,7 +33,7 @@ const rows: Row[] = [
     releaseDate: r.releaseDate,
     maintenanceStartDate: r.maintenanceStartDate,
     eolDate: r.eolDate,
-    derived: r.derived,
+    releaseExact: r.releaseDateExact,
     latest: { version: r.finalPatch, date: null },
     isEol: true,
   })),
@@ -77,12 +77,12 @@ const statusLabel: Record<string, string> = {
                   </span>
                   <span class="muted nowrap">
                     {' '}(
-                    {row.derived ? (
+                    {row.releaseExact ? (
+                      formatDate(row.releaseDate)
+                    ) : (
                       <abbr class="approx" title="Approximate — derived from Kubernetes' ~14-month support policy">
                         ≈{formatDate(row.releaseDate)}
                       </abbr>
-                    ) : (
-                      formatDate(row.releaseDate)
                     )}
                     )
                   </span>

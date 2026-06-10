@@ -35,6 +35,13 @@ const EOL_URL =
   'https://raw.githubusercontent.com/kubernetes/website/main/data/releases/eol.yaml';
 const SIG_RELEASE_README = (v: string) =>
   `https://raw.githubusercontent.com/kubernetes/sig-release/master/releases/release-${v}/README.md`;
+// kube-api.ninja (by xrstf) provides exact historical release dates that the
+// official sources drop once a release reaches EOL. Used only to fill that gap.
+const KUBE_API_SITE = 'https://kube-api.ninja/';
+const KUBE_API_RAW =
+  'https://codeberg.org/xrstf/kube-api.ninja/raw/branch/main/data/releases';
+// Releases older than the official eol.yaml archive (which starts at 1.2).
+const PRE_OFFICIAL_VERSIONS = ['1.1', '1.0'];
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = join(HERE, '..', 'src', 'data', 'snapshot.json');
@@ -119,6 +126,48 @@ function stripMdLinks(s: string): string {
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** Derive maintenance-mode start from an exact release date, clamped to the EOL window. */
+function deriveMaintStart(releaseISO: string, eolISO: string): string {
+  let ms = addMonths(releaseISO, 12); // standard support ≈ 12 months
+  if (ms >= eolISO) ms = addMonths(eolISO, -2); // older/short-lived releases
+  if (ms <= releaseISO) ms = releaseISO;
+  return ms;
+}
+
+/** Run `fn` over `items` with bounded concurrency, preserving order. */
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const idx = next++;
+      results[idx] = await fn(items[idx]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+/** Fetch a single kube-api.ninja data file (e.g. "released"), or null on any failure. */
+async function fetchKubeFile(version: string, file: string): Promise<string | null> {
+  try {
+    const v = (await fetchText(`${KUBE_API_RAW}/${version}/${file}.txt`, 12000)).trim();
+    if (!v) return null;
+    if ((file === 'released' || file === 'eol') && !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+function readPriorSnapshot(): Snapshot | null {
+  try {
+    return JSON.parse(readFileSync(OUT_PATH, 'utf8')) as Snapshot;
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -214,24 +263,92 @@ interface RawEolFile {
   branches?: RawEolBranch[];
 }
 
-function parseEol(text: string): EolRelease[] {
-  const doc = yaml.load(text) as RawEolFile;
-  return (doc.branches ?? [])
-    .filter((b) => b.release)
-    .map((b) => {
-      const eolDate = asISO(b.endOfLifeDate);
-      return {
-        version: b.release!,
-        eolDate,
-        finalPatch: String(b.finalPatchRelease ?? ''),
-        // Derived from Kubernetes' ~14-month support policy (12 active + 2 maint).
-        releaseDate: addMonths(eolDate, -14),
-        maintenanceStartDate: addMonths(eolDate, -2),
-        derived: true as const,
-        ...(b.note ? { note: b.note } : {}),
-      };
-    })
-    .sort((a, b) => compareVersionDesc(a.version, b.version));
+/**
+ * Build the EOL release list. The official eol.yaml supplies the EOL date and
+ * final patch; the exact release date is taken from kube-api.ninja (the official
+ * sources drop it once a release is EOL). Releases predating the official archive
+ * (1.0, 1.1) are sourced entirely from kube-api.ninja.
+ *
+ * Exact release dates already known from a prior snapshot — or from the official
+ * schedule while the release was still supported — are reused, so kube-api.ninja
+ * is generally only queried for the one-time historical backfill.
+ */
+async function buildEol(
+  eolText: string,
+  prior: Snapshot | null,
+  excludeVersions: Set<string>,
+): Promise<EolRelease[]> {
+  const doc = yaml.load(eolText) as RawEolFile;
+  const official = (doc.branches ?? []).filter((b) => b.release);
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Cache of exact release dates we already have (immutable history).
+  const knownRelease = new Map<string, string>();
+  for (const r of prior?.supported ?? []) knownRelease.set(r.version, r.releaseDate);
+  for (const r of prior?.eol ?? []) {
+    if (r.releaseDateExact) knownRelease.set(r.version, r.releaseDate);
+  }
+  const priorEol = new Map((prior?.eol ?? []).map((r) => [r.version, r] as const));
+
+  // Official EOL branches: keep eol/finalPatch, fill release date.
+  const officialRecords = await mapLimit(official, 6, async (b): Promise<EolRelease> => {
+    const version = b.release!;
+    const eolDate = asISO(b.endOfLifeDate);
+    let releaseDate = knownRelease.get(version);
+    let releaseDateExact = releaseDate !== undefined;
+    if (releaseDate === undefined) {
+      const fetched = await fetchKubeFile(version, 'released');
+      if (fetched) {
+        releaseDate = fetched;
+        releaseDateExact = true;
+      } else {
+        releaseDate = addMonths(eolDate, -14); // policy fallback
+        releaseDateExact = false;
+      }
+    }
+    return {
+      version,
+      eolDate,
+      finalPatch: String(b.finalPatchRelease ?? ''),
+      releaseDate,
+      maintenanceStartDate: deriveMaintStart(releaseDate, eolDate),
+      releaseDateExact,
+      eolSource: 'kubernetes',
+      ...(b.note ? { note: b.note } : {}),
+    };
+  });
+
+  // Pre-archive historical releases (1.0, 1.1), entirely from kube-api.ninja.
+  const officialVersions = new Set(official.map((b) => b.release!));
+  const extraRecords: EolRelease[] = [];
+  for (const version of PRE_OFFICIAL_VERSIONS) {
+    if (officialVersions.has(version) || excludeVersions.has(version)) continue;
+    const cached = priorEol.get(version);
+    if (cached?.eolSource === 'kube-api') {
+      extraRecords.push(cached);
+      continue;
+    }
+    const [released, eol, latest] = await Promise.all([
+      fetchKubeFile(version, 'released'),
+      fetchKubeFile(version, 'eol'),
+      fetchKubeFile(version, 'latest'),
+    ]);
+    if (released && eol && latest && eol < today) {
+      extraRecords.push({
+        version,
+        eolDate: eol,
+        finalPatch: latest,
+        releaseDate: released,
+        maintenanceStartDate: deriveMaintStart(released, eol),
+        releaseDateExact: true,
+        eolSource: 'kube-api',
+      });
+    }
+  }
+
+  return [...officialRecords, ...extraRecords].sort((a, b) =>
+    compareVersionDesc(a.version, b.version),
+  );
 }
 
 /** Best-effort parse of a sig-release README "## Summary" milestone list. */
@@ -287,7 +404,6 @@ async function main() {
   ]);
 
   const { supported, upcomingPatches } = parseSchedule(scheduleText);
-  const eol = parseEol(eolText);
 
   if (supported.length === 0) {
     throw new Error('schedule.yaml produced 0 supported releases — refusing to overwrite snapshot');
@@ -327,10 +443,22 @@ async function main() {
     console.log(`  ~ upcoming ${nextVersion}: ${releaseDate} (projected from cadence)`);
   }
 
+  // EOL list: official eol.yaml + exact historical release dates from kube-api.ninja.
+  const prior = readPriorSnapshot();
+  const excludeVersions = new Set<string>([...supported.map((r) => r.version), nextVersion]);
+  const eol = await buildEol(eolText, prior, excludeVersions);
+  const enriched = eol.filter((r) => r.releaseDateExact).length;
+  console.log(`  ✓ EOL: ${eol.length} releases (${enriched} with exact release dates)`);
+
   const snapshot: Snapshot = {
     generatedAt: new Date().toISOString(),
     fresh: true,
-    sources: { schedule: SCHEDULE_URL, eol: EOL_URL, upcoming: upcomingUrl },
+    sources: {
+      schedule: SCHEDULE_URL,
+      eol: EOL_URL,
+      upcoming: upcomingUrl,
+      kubeApi: KUBE_API_SITE,
+    },
     supported,
     eol,
     upcoming,

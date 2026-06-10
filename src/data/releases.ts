@@ -138,7 +138,8 @@ function eolToRow(r: EolRelease): RowInput {
     releaseDate: r.releaseDate,
     maintenanceStartDate: r.maintenanceStartDate,
     eolDate: r.eolDate,
-    derived: r.derived,
+    // Release/EOL dates are exact, but the active↔maintenance split is derived.
+    derived: true,
   };
 }
 

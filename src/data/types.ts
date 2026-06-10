@@ -33,20 +33,25 @@ export interface SupportedRelease {
 }
 
 /**
- * An end-of-life minor release (from eol.yaml).
- * eolDate + finalPatch are exact. releaseDate/maintenanceStartDate are derived
- * from Kubernetes' documented support policy (~14 months) and flagged as such.
+ * An end-of-life minor release.
+ *
+ * eolDate + finalPatch come from the official eol.yaml (or, for releases older
+ * than the official archive, from kube-api.ninja). The releaseDate is the exact
+ * historical date from kube-api.ninja when available, otherwise derived from
+ * Kubernetes' ~14-month support policy. maintenanceStartDate is always derived.
  */
 export interface EolRelease {
   version: string;
   eolDate: string;
   finalPatch: string;
-  /** Derived: eolDate − 14 months. */
+  /** Exact (kube-api.ninja / official) when releaseDateExact, else eolDate − 14 months. */
   releaseDate: string;
-  /** Derived: eolDate − 2 months. */
+  /** Derived: releaseDate + 12 months, clamped within the support window. */
   maintenanceStartDate: string;
-  /** True: release/maintenance dates are derived, not exact. */
-  derived: true;
+  /** True when releaseDate is an exact calendar date, false when policy-derived. */
+  releaseDateExact: boolean;
+  /** Origin of the EOL date + final patch. */
+  eolSource: 'kubernetes' | 'kube-api';
   note?: string;
 }
 
@@ -84,6 +89,7 @@ export interface SnapshotSources {
   schedule: string;
   eol: string;
   upcoming: string;
+  kubeApi: string;
 }
 
 export interface Snapshot {

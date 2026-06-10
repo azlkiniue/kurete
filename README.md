@@ -18,7 +18,7 @@ files.
   (deadline within 90 days) / red (passed) — for both support phases.
 - **Upcoming release panel** for the next minor version: a live countdown to GA
   plus the full release-cycle milestone schedule (freezes, KubeCons, etc.).
-- **End-of-life archive** of every release back to **v1.2 (2016)**, with a
+- **End-of-life archive** of every release back to **v1.0 (2015)**, with a
   "time since EOL" counter for historical documentation.
 - **Live countdowns** to the next release, the next end-of-life, and the next
   patch day — updated every second, client-side.
@@ -27,19 +27,26 @@ files.
 
 ## Data sources
 
-All data comes from the official repositories that back
+The primary source is the official data that backs
 <https://kubernetes.io/releases/>:
 
-| File | Repository | Provides |
+| Source | Repository | Provides |
 | --- | --- | --- |
 | `data/releases/schedule.yaml` | `kubernetes/website` | Supported releases, patch history, upcoming patch days |
-| `data/releases/eol.yaml` | `kubernetes/website` | Full end-of-life history |
+| `data/releases/eol.yaml` | `kubernetes/website` | End-of-life dates + final patches (back to 1.2) |
 | `releases/release-<next>/README.md` | `kubernetes/sig-release` | The next, not-yet-released minor and its milestones |
+| [kube-api.ninja](https://kube-api.ninja/) by [xrstf](https://codeberg.org/xrstf/kube-api.ninja) | `data/releases/<v>/released.txt` | **Exact historical release dates**, and releases 1.0–1.1 absent from the official archive |
 
-Supported and upcoming releases use **exact** upstream dates. EOL releases only
-publish their EOL date and final patch upstream, so their release/maintenance
-dates are **derived** from Kubernetes' documented ~14-month support policy and
-flagged in the UI with a `≈`.
+The official sources drop a release's *release date* once it reaches EOL, so
+that gap is filled from **kube-api.ninja** (exact dates). Releases older than the
+official archive (1.0, 1.1) are sourced entirely from kube-api.ninja. The only
+remaining derived value is each EOL release's active↔maintenance split
+(release date + ~12 months); on the rare occasion an exact release date can't be
+fetched, it falls back to the ~14-month policy and is flagged in the UI with `≈`.
+
+Exact release dates are cached in the committed snapshot (and reused from the
+official schedule captured while a release was still supported), so
+kube-api.ninja is generally only queried for the one-time historical backfill.
 
 ## How the data pipeline works
 
