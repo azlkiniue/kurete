@@ -1,0 +1,24 @@
+{
+  "name": "kubernetes-release-timeline",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Track the Kubernetes release timeline: support windows, EOL countdowns, and the upcoming release. Static site built with Astro + Bun.",
+  "scripts": {
+    "fetch": "bun run scripts/fetch-data.ts",
+    "dev": "astro dev",
+    "build": "bun run fetch && astro build",
+    "build:offline": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "astro": "^6.4.5",
+    "js-yaml": "^4.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.0"
+  }
+}

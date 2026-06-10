@@ -1,0 +1,239 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'Kubernetes Release Timeline',
+  description = 'Track Kubernetes release support windows, end-of-life dates, and the upcoming release — with live countdowns.',
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+const favicon = `${base.replace(/\/$/, '')}/favicon.svg`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+    <title>{title}</title>
+    <script is:inline>
+      // Apply the saved theme before paint to avoid a flash.
+      (function () {
+        try {
+          const saved = localStorage.getItem('theme');
+          const theme =
+            saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e4e8ef;
+    --text: #1c2430;
+    --text-muted: #5b6675;
+    --accent: #326ce5;
+    --accent-weak: #e8f0fe;
+
+    --active: #1b2a78;
+    --maintenance: #3f86e0;
+    --upcoming: #8a93a5;
+    --today: #e8512d;
+
+    --ok-bg: #69d79b;
+    --ok-fg: #0a4f2c;
+    --soon-bg: #f4ce57;
+    --soon-fg: #6b5200;
+    --past-bg: #ef928d;
+    --past-fg: #7a1c1c;
+
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 12px 28px -16px rgba(16, 24, 40, 0.22);
+    --radius: 14px;
+    --radius-sm: 9px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  [data-theme='dark'] {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1b212b;
+    --border: #2a323d;
+    --text: #e6edf3;
+    --text-muted: #97a3b1;
+    --accent: #5b9bf5;
+    --accent-weak: #16243d;
+
+    --active: #2b43c0;
+    --maintenance: #4d8bf5;
+    --upcoming: #6b7585;
+    --today: #ff6b43;
+
+    --ok-bg: #14583b;
+    --ok-fg: #84e7b2;
+    --soon-bg: #5a4612;
+    --soon-fg: #f6d979;
+    --past-bg: #5f2723;
+    --past-fg: #f4afaa;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 12px 28px -16px rgba(0, 0, 0, 0.7);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 2.5rem) clamp(0.8rem, 3vw, 1.5rem) 4rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .section {
+    margin-top: 2.25rem;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+  }
+  .section-head h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .section-head p {
+    margin: 0.25rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .ver {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  /* generic pill */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.12em 0.6em;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.6;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pill-active {
+    background: var(--accent-weak);
+    color: var(--accent);
+  }
+  .pill-maintenance {
+    background: color-mix(in srgb, var(--maintenance) 16%, transparent);
+    color: var(--maintenance);
+  }
+  .pill-eol {
+    background: color-mix(in srgb, var(--past-bg) 35%, transparent);
+    color: var(--past-fg);
+  }
+  .pill-upcoming {
+    background: color-mix(in srgb, var(--ok-bg) 30%, transparent);
+    color: var(--ok-fg);
+  }
+
+  /* traffic-light "chips" used in tables (server-rendered, refreshed live) */
+  .chip {
+    display: inline-block;
+    padding: 0.42rem 0.55rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+  .lvl-ok {
+    background: var(--ok-bg);
+    color: var(--ok-fg);
+  }
+  .lvl-soon {
+    background: var(--soon-bg);
+    color: var(--soon-fg);
+  }
+  .lvl-past {
+    background: var(--past-bg);
+    color: var(--past-fg);
+  }
+  .struck {
+    text-decoration: line-through;
+    opacity: 0.75;
+  }
+  .approx {
+    cursor: help;
+    border-bottom: 1px dotted currentColor;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>

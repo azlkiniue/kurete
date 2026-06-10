@@ -1,0 +1,227 @@
+---
+import { chart } from '../data/releases';
+import { formatDate } from '../lib/dates';
+
+const rowHeight = 30;
+---
+
+<div class="chart-card card">
+  <div class="legend">
+    <span class="legend-item"><span class="swatch sw-active"></span>Active Support</span>
+    <span class="legend-item"><span class="swatch sw-maint"></span>Maintenance Support</span>
+    <span class="legend-item"><span class="swatch sw-upcoming"></span>Upcoming (planned)</span>
+    <span class="legend-item"><span class="swatch sw-today"></span>Today</span>
+  </div>
+
+  <div class="chart-scroll">
+    <div
+      class="chart"
+      data-chart
+      data-range-start={chart.rangeStartISO}
+      data-range-end={chart.rangeEndISO}
+      style={`--label-w: 56px; --row-h: ${rowHeight}px;`}
+    >
+      <div class="chart-plot" style={`height: ${chart.rows.length * rowHeight}px;`}>
+        <div class="chart-lines">
+          {
+            chart.yearLines.map((yl) => (
+              <div class="year-line" style={`left: ${yl.pct}%`} />
+            ))
+          }
+          <div class="today-line" data-today-line style={`left: ${chart.todayPct}%`}>
+            <span class="today-flag">Today</span>
+          </div>
+        </div>
+
+        <div class="chart-rows">
+          {
+            chart.rows.map((row) => (
+              <div class={`chart-row ${row.kind === 'upcoming' ? 'row-upcoming' : ''}`}>
+                <div class="row-label">
+                  <span class="ver">{row.version}</span>
+                </div>
+                <div class="row-track">
+                  {row.bars.map((bar) => (
+                    <div
+                      class={`bar ${bar.kind === 'active' ? 'bar-active' : 'bar-maint'} ${row.kind === 'upcoming' ? 'is-projected' : ''}`}
+                      style={`left: ${bar.startPct}%; width: ${Math.max(bar.widthPct, 0.4)}%`}
+                      title={`${bar.kind === 'active' ? 'Active support' : 'Maintenance support'}: ${formatDate(bar.startISO)} → ${formatDate(bar.endISO)}${row.derived ? ' (approx.)' : ''}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="chart-axis">
+        {
+          chart.yearLines.map((yl) => (
+            <span class="axis-year" style={`left: ${yl.pct}%`}>
+              {yl.year}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .chart-card {
+    padding: 1.1rem 1.1rem 0.75rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .sw-active {
+    background: var(--active);
+  }
+  .sw-maint {
+    background: var(--maintenance);
+  }
+  .sw-upcoming {
+    background: color-mix(in srgb, var(--active) 28%, transparent);
+    outline: 1.5px dashed var(--active);
+    outline-offset: -1.5px;
+  }
+  .sw-today {
+    background: var(--today);
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+  }
+
+  .chart-scroll {
+    overflow-x: auto;
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+  }
+  .chart {
+    min-width: 560px;
+    position: relative;
+  }
+
+  .chart-plot {
+    position: relative;
+  }
+
+  /* gridlines + today layer, offset to overlay only the track area */
+  .chart-lines {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--label-w);
+    right: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .year-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .today-line {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 0;
+    border-left: 2px dashed var(--today);
+    z-index: 3;
+  }
+  .today-flag {
+    position: absolute;
+    top: -9px;
+    left: 2px;
+    transform: translateX(-50%);
+    background: var(--today);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.05rem 0.3rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .chart-rows {
+    position: relative;
+    z-index: 1;
+  }
+  .chart-row {
+    display: grid;
+    grid-template-columns: var(--label-w) 1fr;
+    align-items: center;
+    height: var(--row-h);
+  }
+  .row-label {
+    font-size: 0.8rem;
+    padding-right: 0.5rem;
+    color: var(--text-muted);
+  }
+  .row-track {
+    position: relative;
+    height: 100%;
+  }
+  .bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 62%;
+    border-radius: 5px;
+    min-height: 14px;
+  }
+  .bar-active {
+    background: var(--active);
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+  }
+  .bar-maint {
+    background: var(--maintenance);
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+  }
+  .bar-active.is-projected {
+    background: color-mix(in srgb, var(--active) 26%, transparent);
+    border: 1.5px dashed var(--active);
+  }
+  .bar-maint.is-projected {
+    background: color-mix(in srgb, var(--maintenance) 26%, transparent);
+    border: 1.5px dashed var(--maintenance);
+  }
+
+  .chart-axis {
+    position: relative;
+    height: 1.6rem;
+    margin-left: var(--label-w);
+    margin-top: 0.15rem;
+  }
+  .axis-year {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

@@ -1,0 +1,180 @@
+---
+import { supported, recentEol } from '../data/releases';
+import { endsText, cellLevel, relativeFromNow, formatDate, releaseStatus } from '../lib/dates';
+
+const now = new Date();
+const tag = (v: string) => `https://github.com/kubernetes/kubernetes/releases/tag/v${v}`;
+
+interface Row {
+  version: string;
+  status: ReturnType<typeof releaseStatus>;
+  releaseDate: string;
+  maintenanceStartDate: string;
+  eolDate: string;
+  derived: boolean;
+  latest: { version: string; date: string | null } | null;
+  isEol: boolean;
+}
+
+const rows: Row[] = [
+  ...supported.map((r) => ({
+    version: r.version,
+    status: releaseStatus(r, now),
+    releaseDate: r.releaseDate,
+    maintenanceStartDate: r.maintenanceStartDate,
+    eolDate: r.eolDate,
+    derived: r.derived,
+    latest: r.latestPatch ? { version: r.latestPatch.version, date: r.latestPatch.date } : null,
+    isEol: false,
+  })),
+  ...recentEol.map((r) => ({
+    version: r.version,
+    status: 'eol' as const,
+    releaseDate: r.releaseDate,
+    maintenanceStartDate: r.maintenanceStartDate,
+    eolDate: r.eolDate,
+    derived: r.derived,
+    latest: { version: r.finalPatch, date: null },
+    isEol: true,
+  })),
+];
+
+const statusLabel: Record<string, string> = {
+  active: 'Active',
+  maintenance: 'Maintenance',
+  eol: 'End of life',
+  upcoming: 'Upcoming',
+};
+---
+
+<div class="table-card card">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Release</th>
+          <th>Released</th>
+          <th>Active Support</th>
+          <th>Maintenance Support</th>
+          <th>Latest</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => {
+            const rel = relativeFromNow(row.releaseDate, now);
+            const lvlActive = cellLevel(row.maintenanceStartDate, now);
+            const lvlMaint = cellLevel(row.eolDate, now);
+            return (
+              <tr class={row.isEol ? 'is-eol' : ''}>
+                <td class="c-release">
+                  <span class={`ver ${row.isEol ? 'struck' : ''}`}>{row.version}</span>
+                  <span class={`pill pill-${row.status}`}>{statusLabel[row.status]}</span>
+                </td>
+                <td class="c-released">
+                  <span class="rel" data-since={row.releaseDate}>
+                    {rel.human} ago
+                  </span>
+                  <span class="muted nowrap">
+                    {' '}(
+                    {row.derived ? (
+                      <abbr class="approx" title="Approximate — derived from Kubernetes' ~14-month support policy">
+                        ≈{formatDate(row.releaseDate)}
+                      </abbr>
+                    ) : (
+                      formatDate(row.releaseDate)
+                    )}
+                    )
+                  </span>
+                </td>
+                <td class="c-support">
+                  <div class={`chip lvl-${lvlActive}`} data-ends={row.maintenanceStartDate}>
+                    {endsText(row.maintenanceStartDate, now)}
+                  </div>
+                </td>
+                <td class="c-support">
+                  <div class={`chip lvl-${lvlMaint}`} data-ends={row.eolDate}>
+                    {endsText(row.eolDate, now)}
+                  </div>
+                </td>
+                <td class="c-latest">
+                  {row.latest ? (
+                    <>
+                      <a class={row.isEol ? 'struck' : ''} href={tag(row.latest.version)} target="_blank" rel="noopener">
+                        {row.latest.version}
+                      </a>
+                      {row.latest.date && <div class="muted nowrap">{formatDate(row.latest.date)}</div>}
+                    </>
+                  ) : (
+                    <span class="muted">—</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .table-card {
+    padding: 0.4rem;
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 640px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    padding: 0.85rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 0.7rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    font-size: 0.9rem;
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+  tbody tr:hover {
+    background: var(--surface-2);
+  }
+  .c-release {
+    align-items: center;
+  }
+  .c-release .ver {
+    font-size: 1.02rem;
+  }
+  .c-released {
+    min-width: 150px;
+  }
+  .rel {
+    font-weight: 500;
+  }
+  .c-support {
+    min-width: 170px;
+  }
+  .c-support .chip {
+    display: block;
+  }
+  .c-latest a {
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+</style>

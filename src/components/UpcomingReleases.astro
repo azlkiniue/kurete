@@ -1,0 +1,256 @@
+---
+import { upcoming, upcomingPatches } from '../data/releases';
+import { formatDate, countdownParts, formatCountdown, parseISODate } from '../lib/dates';
+
+const now = new Date();
+const cd0 = (iso: string) => formatCountdown(countdownParts(iso, now.getTime()));
+const isPast = (iso: string) => parseISODate(iso).getTime() < now.getTime();
+---
+
+<div class="up-grid">
+  {
+    upcoming && (
+      <div class="up-main card">
+        <div class="up-head">
+          <span class="pill pill-upcoming">Upcoming minor</span>
+          <h3>
+            Kubernetes <span class="ver">{upcoming.version}</span>
+          </h3>
+          <p class="muted">
+            Planned release {formatDate(upcoming.releaseDate)}
+            {upcoming.estimated && <span class="est"> · estimated from cadence</span>}
+          </p>
+        </div>
+
+        <div class="cd-box">
+          <span class="cd-label">Releases in</span>
+          <span
+            class="cd cd-big"
+            data-countdown={upcoming.releaseDate}
+            data-countdown-past="Released 🎉"
+          >
+            {cd0(upcoming.releaseDate)}
+          </span>
+        </div>
+
+        {upcoming.milestones.length > 0 && (
+          <ol class="milestones">
+            {upcoming.milestones.map((m) => {
+              const done = isPast(m.date);
+              const release = /released/i.test(m.label);
+              return (
+                <li class={`${done ? 'done' : ''} ${release ? 'is-release' : ''}`}>
+                  <span class="dot" />
+                  <span class="ms-date nowrap">{formatDate(m.date)}</span>
+                  <span class="ms-label">{m.label}</span>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+
+        <p class="src muted">
+          Projected support after release: active until ≈{formatDate(upcoming.projectedMaintenanceStartDate)},
+          end of life ≈{formatDate(upcoming.projectedEolDate)}.{' '}
+          <a href={upcoming.source} target="_blank" rel="noopener">schedule&nbsp;source ↗</a>
+        </p>
+      </div>
+    )
+  }
+
+  <div class="up-side card">
+    <h3>Upcoming patch releases</h3>
+    <p class="muted side-sub">Monthly patch days across all supported branches.</p>
+    {
+      upcomingPatches.length > 0 ? (
+        <ul class="patches">
+          {upcomingPatches.map((p, i) => (
+            <li>
+              <div class="p-row">
+                <span class="p-date nowrap">{formatDate(p.targetDate)}</span>
+                {i === 0 && (
+                  <span class="cd cd-small" data-countdown={p.targetDate} data-countdown-past="due">
+                    {cd0(p.targetDate)}
+                  </span>
+                )}
+              </div>
+              {p.cherryPickDeadline && (
+                <span class="muted p-cp nowrap">cherry-pick by {formatDate(p.cherryPickDeadline)}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="muted">No upcoming patch days published.</p>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .up-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .up-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .up-main,
+  .up-side {
+    padding: 1.25rem;
+  }
+  .up-head h3 {
+    margin: 0.5rem 0 0.2rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+  .up-head h3 .ver {
+    font-size: 1.35rem;
+  }
+  .up-head p {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+  .est {
+    color: var(--soon-fg);
+  }
+
+  .cd-box {
+    margin: 1.1rem 0 1.25rem;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .cd-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .cd {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .cd-big {
+    font-size: clamp(1.4rem, 5vw, 2.1rem);
+    letter-spacing: -0.01em;
+  }
+  .cd.is-past {
+    color: var(--ok-fg);
+  }
+
+  .milestones {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+  .milestones::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .milestones li {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 7.5rem 1fr;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.3rem 0;
+    font-size: 0.88rem;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    z-index: 1;
+    align-self: center;
+  }
+  .milestones li.done .dot {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .milestones li.is-release .dot {
+    background: var(--ok-bg);
+    border-color: var(--ok-fg);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok-bg) 40%, transparent);
+  }
+  .milestones li.is-release .ms-label {
+    font-weight: 700;
+  }
+  .ms-date {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .milestones li.done .ms-date {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .src {
+    margin: 1.1rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .up-side h3 {
+    margin: 0 0 0.2rem;
+    font-size: 1.05rem;
+  }
+  .side-sub {
+    margin: 0 0 0.9rem;
+    font-size: 0.84rem;
+  }
+  .patches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .patches li {
+    padding-bottom: 0.7rem;
+    border-bottom: 1px dashed var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .patches li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .p-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .p-date {
+    font-weight: 600;
+  }
+  .cd-small {
+    font-size: 0.82rem;
+  }
+  .p-cp {
+    font-size: 0.78rem;
+  }
+</style>

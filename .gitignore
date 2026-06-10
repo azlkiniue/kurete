@@ -1,0 +1,28 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# bun
+.bun/
+
+# logs
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# editor / os
+.DS_Store
+.vscode/
+.idea/
+
+# env
+.env
+.env.production
+.env.local
+
+launch.json
+
+# NOTE: src/data/snapshot.json is intentionally committed as a build fallback.

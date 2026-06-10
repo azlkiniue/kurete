@@ -1,0 +1,151 @@
+---
+import { eolReleases } from '../data/releases';
+import { sinceText, formatDate } from '../lib/dates';
+
+const now = new Date();
+const VISIBLE = 8;
+const hiddenCount = Math.max(eolReleases.length - VISIBLE, 0);
+const tag = (v: string) => `https://github.com/kubernetes/kubernetes/releases/tag/v${v}`;
+---
+
+<div class="eol-card card" data-extra-scope>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Release</th>
+          <th>Released</th>
+          <th>End of Life</th>
+          <th>Time since EOL</th>
+          <th>Final patch</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          eolReleases.map((r, i) => {
+            return (
+              <tr class={i >= VISIBLE ? 'extra' : ''}>
+                <td>
+                  <span class="ver">{r.version}</span>
+                  {r.note && (
+                    <abbr class="note" title={r.note}>
+                      ⓘ
+                    </abbr>
+                  )}
+                </td>
+                <td class="muted nowrap">
+                  <abbr class="approx" title="Approximate — derived from Kubernetes' ~14-month support policy">
+                    ≈{formatDate(r.releaseDate)}
+                  </abbr>
+                </td>
+                <td class="nowrap">{formatDate(r.eolDate)}</td>
+                <td class="since nowrap" data-since={r.eolDate}>{sinceText(r.eolDate, now)}</td>
+                <td class="nowrap">
+                  <a class="struck" href={tag(r.finalPatch)} target="_blank" rel="noopener">
+                    {r.finalPatch}
+                  </a>
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+
+  {
+    hiddenCount > 0 && (
+      <div class="eol-foot">
+        <button
+          type="button"
+          class="more-btn"
+          data-toggle-extra
+          data-more={`Show ${hiddenCount} more end-of-life releases`}
+          data-less="Show fewer"
+        >
+          Show {hiddenCount} more end-of-life releases
+        </button>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .eol-card {
+    padding: 0.4rem 0.4rem 0;
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 560px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  tbody tr:hover {
+    background: var(--surface-2);
+  }
+  .ver {
+    font-size: 0.96rem;
+  }
+  .since {
+    color: var(--past-fg);
+    font-weight: 500;
+  }
+  [data-theme='dark'] .since {
+    color: var(--soon-fg);
+  }
+  .note {
+    margin-left: 0.35rem;
+    color: var(--accent);
+    cursor: help;
+    text-decoration: none;
+    font-size: 0.8rem;
+  }
+
+  /* expander */
+  .eol-card:not(.show-extra) .extra {
+    display: none;
+  }
+  .eol-foot {
+    display: flex;
+    justify-content: center;
+    padding: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+  .more-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .more-btn:hover {
+    background: var(--accent-weak);
+    border-color: var(--accent);
+  }
+</style>

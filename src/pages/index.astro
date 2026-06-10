@@ -1,0 +1,250 @@
+---
+import Base from '../layouts/Base.astro';
+import TimelineChart from '../components/TimelineChart.astro';
+import ReleaseTable from '../components/ReleaseTable.astro';
+import UpcomingReleases from '../components/UpcomingReleases.astro';
+import EolReleases from '../components/EolReleases.astro';
+import { snapshot, upcoming, nextEol, nextPatch } from '../data/releases';
+import { formatDate, countdownParts, formatCountdown, sinceText } from '../lib/dates';
+
+const nowMs = Date.now();
+const cd0 = (iso: string) => formatCountdown(countdownParts(iso, nowMs));
+const builtDate = snapshot.generatedAt.slice(0, 10);
+---
+
+<Base>
+  <main class="wrap">
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#326ce5"></rect>
+            <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="32" cy="32" r="6.5" fill="#fff" stroke="none"></circle>
+              <circle cx="32" cy="32" r="17"></circle>
+              <line x1="32" y1="15" x2="32" y2="25.5"></line>
+              <line x1="46.7" y1="23.5" x2="37.6" y2="28.8"></line>
+              <line x1="46.7" y1="40.5" x2="37.6" y2="35.2"></line>
+              <line x1="32" y1="49" x2="32" y2="38.5"></line>
+              <line x1="17.3" y1="40.5" x2="26.4" y2="35.2"></line>
+              <line x1="17.3" y1="23.5" x2="26.4" y2="28.8"></line>
+            </g>
+          </svg>
+          <h1>Kubernetes Release Timeline</h1>
+        </div>
+        <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle dark mode">
+          <span class="theme-icon">◐</span>
+        </button>
+      </div>
+      <p class="lede">
+        Support windows, end-of-life dates, and the next release — from the official Kubernetes
+        schedule, with countdowns that tick live in your browser.
+      </p>
+
+      <div class="kpis">
+        {
+          upcoming && (
+            <div class="kpi card">
+              <span class="kpi-label">Next release · {upcoming.version}</span>
+              <span class="cd kpi-cd" data-countdown={upcoming.releaseDate} data-countdown-past="Released 🎉">
+                {cd0(upcoming.releaseDate)}
+              </span>
+              <span class="kpi-sub">{formatDate(upcoming.releaseDate)}</span>
+            </div>
+          )
+        }
+        {
+          nextEol && (
+            <div class="kpi card">
+              <span class="kpi-label">Next end-of-life · {nextEol.version}</span>
+              <span class="cd kpi-cd" data-countdown={nextEol.eolDate} data-countdown-past="reached">
+                {cd0(nextEol.eolDate)}
+              </span>
+              <span class="kpi-sub">{formatDate(nextEol.eolDate)}</span>
+            </div>
+          )
+        }
+        {
+          nextPatch && (
+            <div class="kpi card">
+              <span class="kpi-label">Next patch day</span>
+              <span class="cd kpi-cd" data-countdown={nextPatch.targetDate} data-countdown-past="due">
+                {cd0(nextPatch.targetDate)}
+              </span>
+              <span class="kpi-sub">{formatDate(nextPatch.targetDate)}</span>
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="t-timeline">
+      <div class="section-head">
+        <div>
+          <h2 id="t-timeline">Release timeline</h2>
+          <p>Active support and maintenance windows for recent, current, and upcoming releases.</p>
+        </div>
+      </div>
+      <TimelineChart />
+    </section>
+
+    <section class="section" aria-labelledby="t-supported">
+      <div class="section-head">
+        <div>
+          <h2 id="t-supported">Supported releases</h2>
+          <p>Currently maintained releases plus the most recent to roll off. Colors flag deadlines within 90 days.</p>
+        </div>
+      </div>
+      <ReleaseTable />
+    </section>
+
+    <section class="section" aria-labelledby="t-upcoming">
+      <div class="section-head">
+        <div>
+          <h2 id="t-upcoming">Upcoming</h2>
+          <p>The next minor version and its release-cycle milestones, plus upcoming patch days.</p>
+        </div>
+      </div>
+      <UpcomingReleases />
+    </section>
+
+    <section class="section" aria-labelledby="t-eol">
+      <div class="section-head">
+        <div>
+          <h2 id="t-eol">End-of-life releases</h2>
+          <p>Historical archive of every release that has reached end of life, back to v1.2 (2016).</p>
+        </div>
+      </div>
+      <EolReleases />
+    </section>
+
+    <footer class="foot">
+      <p>
+        Data from the official Kubernetes release schedule —
+        <a href="https://kubernetes.io/releases/" target="_blank" rel="noopener">kubernetes.io/releases</a>
+        (<a href={snapshot.sources.schedule} target="_blank" rel="noopener">schedule.yaml</a>,
+        <a href={snapshot.sources.eol} target="_blank" rel="noopener">eol.yaml</a>,
+        <a href="https://github.com/kubernetes/sig-release" target="_blank" rel="noopener">sig-release</a>).
+      </p>
+      <p class="foot-meta">
+        Snapshot built {formatDate(builtDate)}
+        (<span data-since={builtDate}>{sinceText(builtDate)}</span>){!snapshot.fresh && <span class="stale"> · served from cache</span>}.
+        Dates marked ≈ are derived from Kubernetes' ~14-month support policy. Countdowns update live.
+        Not affiliated with the Kubernetes project.
+      </p>
+    </footer>
+  </main>
+
+  <script>
+    import '../lib/countdown.client.ts';
+  </script>
+</Base>
+
+<style>
+  .hero {
+    padding-top: 0.5rem;
+  }
+  .hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .logo {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 9px;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4.5vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    margin: 0.9rem 0 0;
+    max-width: 60ch;
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .theme-btn {
+    appearance: none;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .theme-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--accent);
+  }
+
+  .kpis {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 720px) {
+    .kpis {
+      grid-template-columns: 1fr;
+    }
+  }
+  .kpi {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .kpi-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .kpi-cd {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: clamp(1.25rem, 3.6vw, 1.6rem);
+    color: var(--accent);
+  }
+  .kpi-cd.is-past {
+    color: var(--ok-fg);
+  }
+  .kpi-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .foot {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .foot p {
+    margin: 0 0 0.5rem;
+  }
+  .stale {
+    color: var(--soon-fg);
+  }
+</style>
