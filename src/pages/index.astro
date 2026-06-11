@@ -30,15 +30,36 @@ const builtDate = snapshot.generatedAt.slice(0, 10);
               <line x1="17.3" y1="23.5" x2="26.4" y2="28.8"></line>
             </g>
           </svg>
-          <h1>Kubernetes Release Timeline</h1>
+          <div class="wordmark">
+            <h1 title="暮れて (kurete): as dusk falls and a day draws to its close, every release has its sunset.">
+              Kurete
+            </h1>
+            <span class="tagline">Kubernetes Release Timeline</span>
+          </div>
         </div>
-        <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle dark mode">
-          <span class="theme-icon">◐</span>
+        <button
+          type="button"
+          class="theme-btn"
+          data-theme-toggle
+          aria-label="Theme: system (follows your OS)"
+          title="Theme: system (follows your OS)"
+        >
+          <svg class="ti ti-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <svg class="ti ti-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+          </svg>
+          <svg class="ti ti-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+          </svg>
         </button>
       </div>
       <p class="lede">
-        Support windows, end-of-life dates, and the next release — from the official Kubernetes
-        schedule, with countdowns that tick live in your browser.
+        Support windows, end-of-life dates, and the next release of Kubernetes.
       </p>
 
       <div class="kpis">
@@ -162,16 +183,31 @@ const builtDate = snapshot.generatedAt.slice(0, 10);
     gap: 0.7rem;
   }
   .logo {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     flex: none;
-    border-radius: 9px;
+    border-radius: 10px;
+  }
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
   }
   .hero h1 {
     margin: 0;
     font-size: clamp(1.5rem, 4.5vw, 2.1rem);
     font-weight: 800;
     letter-spacing: -0.02em;
+    line-height: 1.05;
+    cursor: help;
+    width: fit-content;
+  }
+  .tagline {
+    font-size: clamp(0.72rem, 2vw, 0.82rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
   .lede {
     margin: 0.9rem 0 0;
@@ -188,16 +224,27 @@ const builtDate = snapshot.generatedAt.slice(0, 10);
     border-radius: 10px;
     border: 1px solid var(--border);
     background: var(--surface);
-    color: var(--text);
-    font-size: 1.2rem;
+    color: var(--text-muted);
     cursor: pointer;
     display: grid;
     place-items: center;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
   .theme-btn:hover {
     background: var(--surface-2);
     border-color: var(--accent);
+    color: var(--accent);
+  }
+  .theme-btn .ti {
+    width: 19px;
+    height: 19px;
+    display: none;
+  }
+  /* Show the icon matching the active mode (set on <html> before paint). */
+  :global([data-theme-mode='system']) .theme-btn .ti-system,
+  :global([data-theme-mode='light']) .theme-btn .ti-light,
+  :global([data-theme-mode='dark']) .theme-btn .ti-dark {
+    display: block;
   }
 
   .kpis {

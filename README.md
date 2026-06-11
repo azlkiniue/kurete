@@ -1,14 +1,23 @@
-# Kubernetes Release Timeline
+# Kurete
 
-A fast, static dashboard that tracks the Kubernetes release lifecycle — support
-windows, end-of-life dates, and the next release — with **countdowns that tick
-live in the browser**.
+**Ku·re·te** — a fast, static dashboard that tracks the Kubernetes release
+lifecycle — support windows, end-of-life dates, and the next release — with
+**countdowns that tick live in the browser**.
 
 Built with [Astro](https://astro.build) and [Bun](https://bun.sh). No backend,
 no Node.js — deploys to **GitHub Pages** or **Cloudflare Pages** as plain static
 files.
 
-![Kubernetes Release Timeline](https://kubernetes.io/images/favicon.png)
+## The name
+
+**Kurete** is a syllabic acronym of **KU**bernetes **RE**lease **T**imelin**E**
+(KU·RE·TE).
+
+It's also the Japanese word **暮れて** *(kurete)*, the te-form of 暮れる
+*(kureru)* — "for the day to grow dark, for dusk to fall, for a year or season to
+**draw to its close**." That's a fitting meaning: This dashboard is, at heart, about 
+the **sunset of every release**, the end-of-life moment when a version's day 
+finally closes. 暮れる *is* that moment.
 
 ## Features
 
@@ -22,7 +31,9 @@ files.
   "time since EOL" counter for historical documentation.
 - **Live countdowns** to the next release, the next end-of-life, and the next
   patch day — updated every second, client-side.
-- **Light / dark theme**, fully responsive, accessible, and zero client
+- **System-aware light / dark theme** (mode-watcher style): defaults to
+  following your OS appearance and tracks it **live**, with a one-click cycle
+  through system → light → dark. Fully responsive, accessible, and zero client
   frameworks (just a small vanilla-JS enhancement script).
 
 ## Data sources
@@ -35,7 +46,7 @@ The primary source is the official data that backs
 | `data/releases/schedule.yaml` | `kubernetes/website` | Supported releases, patch history, upcoming patch days |
 | `data/releases/eol.yaml` | `kubernetes/website` | End-of-life dates + final patches (back to 1.2) |
 | `releases/release-<next>/README.md` | `kubernetes/sig-release` | The next, not-yet-released minor and its milestones |
-| [kube-api.ninja](https://kube-api.ninja/) by [xrstf](https://codeberg.org/xrstf/kube-api.ninja) | `data/releases/<v>/released.txt` | **Exact historical release dates**, and releases 1.0–1.1 absent from the official archive |
+| `data/releases/<v>/released.txt` | [kube-api.ninja](https://kube-api.ninja/) by [xrstf](https://codeberg.org/xrstf/kube-api.ninja) | **Exact historical release dates**, and releases 1.0–1.1 absent from the official archive |
 
 The official sources drop a release's *release date* once it reaches EOL, so
 that gap is filled from **kube-api.ninja** (exact dates). Releases older than the

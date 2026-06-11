@@ -1,8 +1,8 @@
 {
-  "name": "kubernetes-release-timeline",
+  "name": "kurete",
   "type": "module",
   "version": "1.0.0",
-  "description": "Track the Kubernetes release timeline: support windows, EOL countdowns, and the upcoming release. Static site built with Astro + Bun.",
+  "description": "Kurete (KUbernetes RElease TimelinE): track support windows, EOL countdowns, and the upcoming release. Static site built with Astro + Bun.",
   "scripts": {
     "fetch": "bun run scripts/fetch-data.ts",
     "dev": "astro dev",

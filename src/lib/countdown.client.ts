@@ -72,14 +72,74 @@ function refreshTodayLine(): void {
   }
 }
 
+/**
+ * Theme control, mode-watcher style: three modes (system | light | dark) that
+ * cycle on click. "system" follows the OS and keeps following it live — if the
+ * user flips their OS appearance while in system mode, the page updates at once.
+ * The persisted value is the *mode*; the resolved theme is derived from it.
+ */
+type ThemeMode = 'system' | 'light' | 'dark';
+
+const THEME_KEY = 'theme-mode';
+const MODE_CYCLE: ThemeMode[] = ['system', 'light', 'dark'];
+const systemMql = matchMedia('(prefers-color-scheme: dark)');
+
+function systemTheme(): 'light' | 'dark' {
+  return systemMql.matches ? 'dark' : 'light';
+}
+
+function readMode(): ThemeMode {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
+  } catch {
+    /* ignore */
+  }
+  return 'system';
+}
+
+function applyMode(mode: ThemeMode): void {
+  const root = document.documentElement;
+  const theme = mode === 'system' ? systemTheme() : mode;
+  root.dataset.themeMode = mode;
+  root.dataset.theme = theme;
+  root.style.colorScheme = theme;
+}
+
+function modeLabel(mode: ThemeMode): string {
+  if (mode === 'system') return 'Theme: system (follows your OS) — click for light';
+  if (mode === 'light') return 'Theme: light — click for dark';
+  return 'Theme: dark — click for system';
+}
+
 function initThemeToggle(): void {
-  const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
+  // Live OS sync: only meaningful while in "system" mode.
+  const onSystemChange = (): void => {
+    if (readMode() === 'system') applyMode('system');
+  };
+  if (typeof systemMql.addEventListener === 'function') {
+    systemMql.addEventListener('change', onSystemChange);
+  } else if (typeof systemMql.addListener === 'function') {
+    systemMql.addListener(onSystemChange); // Safari < 14
+  }
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
   if (!btn) return;
+
+  const reflect = (mode: ThemeMode): void => {
+    const label = modeLabel(mode);
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+  };
+
+  reflect(readMode());
+
   btn.addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
+    const next = MODE_CYCLE[(MODE_CYCLE.indexOf(readMode()) + 1) % MODE_CYCLE.length];
+    applyMode(next);
+    reflect(next);
     try {
-      localStorage.setItem('theme', next);
+      localStorage.setItem(THEME_KEY, next);
     } catch {
       /* ignore */
     }
