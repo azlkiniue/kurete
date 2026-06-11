@@ -7,7 +7,7 @@ on:
   # Re-fetch the Kubernetes schedule and redeploy daily so countdowns and
   # support windows stay current without a manual push.
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 6 */3 * *'
   # Allow manual runs from the Actions tab.
   workflow_dispatch:
 
