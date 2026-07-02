@@ -66,9 +66,9 @@ const statusLabel: Record<string, string> = {
             const lvlActive = cellLevel(row.maintenanceStartDate, now);
             const lvlMaint = cellLevel(row.eolDate, now);
             return (
-              <tr class={row.isEol ? 'is-eol' : ''}>
+              <tr class={row.isEol || row.status === 'eol' ? 'is-eol' : ''}>
                 <td class="c-release">
-                  <span class={`ver ${row.isEol ? 'struck' : ''}`}>{row.version}</span>
+                  <span class={`ver ${row.isEol || row.status === 'eol' ? 'struck' : ''}`}>{row.version}</span>
                   <span class={`pill pill-${row.status}`}>{statusLabel[row.status]}</span>
                 </td>
                 <td class="c-released">
@@ -100,7 +100,7 @@ const statusLabel: Record<string, string> = {
                 <td class="c-latest">
                   {row.latest ? (
                     <>
-                      <a class={row.isEol ? 'struck' : ''} href={tag(row.latest.version)} target="_blank" rel="noopener">
+                      <a class={row.isEol || row.status === 'eol' ? 'struck' : ''} href={tag(row.latest.version)} target="_blank" rel="noopener">
                         {row.latest.version}
                       </a>
                       {row.latest.date && <div class="muted nowrap">{formatDate(row.latest.date)}</div>}
