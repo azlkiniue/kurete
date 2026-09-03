@@ -1,29 +1,46 @@
 {
-  "generatedAt": "2026-07-02T03:05:46.659Z",
+  "generatedAt": "2026-09-03T02:07:35.958Z",
   "fresh": true,
   "sources": {
     "schedule": "https://raw.githubusercontent.com/kubernetes/website/main/data/releases/schedule.yaml",
     "eol": "https://raw.githubusercontent.com/kubernetes/website/main/data/releases/eol.yaml",
-    "upcoming": "https://raw.githubusercontent.com/kubernetes/sig-release/master/releases/release-1.37/README.md",
+    "upcoming": "https://raw.githubusercontent.com/kubernetes/sig-release/master/releases/release-1.38/README.md",
     "kubeApi": "https://kube-api.ninja/"
   },
   "supported": [
+    {
+      "version": "1.37",
+      "releaseDate": "2026-08-26",
+      "maintenanceStartDate": "2027-08-28",
+      "eolDate": "2027-10-28",
+      "latestPatch": {
+        "version": "1.37.0",
+        "date": "2026-08-26"
+      },
+      "nextPatch": {
+        "version": "1.37.1",
+        "date": "2026-09-15",
+        "cherryPickDeadline": "2026-09-11"
+      },
+      "patchCount": 0,
+      "derived": false
+    },
     {
       "version": "1.36",
       "releaseDate": "2026-04-22",
       "maintenanceStartDate": "2027-04-28",
       "eolDate": "2027-06-28",
       "latestPatch": {
-        "version": "1.36.2",
-        "date": "2026-06-09",
-        "cherryPickDeadline": "2026-06-05"
+        "version": "1.36.4",
+        "date": "2026-08-11",
+        "cherryPickDeadline": "2026-08-07"
       },
       "nextPatch": {
-        "version": "1.36.3",
-        "date": "2026-07-14",
-        "cherryPickDeadline": "2026-07-10"
+        "version": "1.36.5",
+        "date": "2026-09-15",
+        "cherryPickDeadline": "2026-09-11"
       },
-      "patchCount": 2,
+      "patchCount": 4,
       "derived": false
     },
     {
@@ -32,16 +49,16 @@
       "maintenanceStartDate": "2026-12-28",
       "eolDate": "2027-02-28",
       "latestPatch": {
-        "version": "1.35.6",
-        "date": "2026-06-09",
-        "cherryPickDeadline": "2026-06-05"
+        "version": "1.35.8",
+        "date": "2026-08-11",
+        "cherryPickDeadline": "2026-08-07"
       },
       "nextPatch": {
-        "version": "1.35.7",
-        "date": "2026-07-14",
-        "cherryPickDeadline": "2026-07-10"
+        "version": "1.35.9",
+        "date": "2026-09-15",
+        "cherryPickDeadline": "2026-09-11"
       },
-      "patchCount": 6,
+      "patchCount": 8,
       "derived": false
     },
     {
@@ -50,34 +67,29 @@
       "maintenanceStartDate": "2026-08-27",
       "eolDate": "2026-10-27",
       "latestPatch": {
-        "version": "1.34.9",
-        "date": "2026-06-09",
-        "cherryPickDeadline": "2026-06-05"
+        "version": "1.34.11",
+        "date": "2026-08-11",
+        "cherryPickDeadline": "2026-08-07"
       },
       "nextPatch": {
-        "version": "1.34.10",
-        "date": "2026-07-14",
-        "cherryPickDeadline": "2026-07-10"
+        "version": "1.34.12",
+        "date": "2026-09-15",
+        "cherryPickDeadline": "2026-09-11"
       },
-      "patchCount": 9,
-      "derived": false
-    },
-    {
-      "version": "1.33",
-      "releaseDate": "2025-04-23",
-      "maintenanceStartDate": "2026-04-28",
-      "eolDate": "2026-06-28",
-      "latestPatch": {
-        "version": "1.33.13",
-        "date": "2026-06-09",
-        "cherryPickDeadline": "2026-06-05"
-      },
-      "nextPatch": null,
-      "patchCount": 13,
+      "patchCount": 11,
       "derived": false
     }
   ],
   "eol": [
+    {
+      "version": "1.33",
+      "eolDate": "2026-06-28",
+      "finalPatch": "1.33.13",
+      "releaseDate": "2025-04-23",
+      "maintenanceStartDate": "2026-04-23",
+      "releaseDateExact": true,
+      "eolSource": "kubernetes"
+    },
     {
       "version": "1.32",
       "eolDate": "2026-02-28",
@@ -382,64 +394,27 @@
     }
   ],
   "upcoming": {
-    "version": "1.37",
-    "releaseDate": "2026-08-26",
-    "projectedMaintenanceStartDate": "2027-08-26",
-    "projectedEolDate": "2027-10-26",
-    "cycleStart": "2026-05-18",
-    "milestones": [
-      {
-        "date": "2026-05-18",
-        "label": "Week 1 — Release cycle begins"
-      },
-      {
-        "date": "2026-06-09",
-        "label": "Week 4 — Production Readiness Freeze"
-      },
-      {
-        "date": "2026-06-16",
-        "label": "Week 5 — Enhancements Freeze"
-      },
-      {
-        "date": "2026-06-19",
-        "label": "Week 5 — KubeCon India"
-      },
-      {
-        "date": "2026-07-09",
-        "label": "Week 8 — Feature blog freeze"
-      },
-      {
-        "date": "2026-07-22",
-        "label": "Week 10 — Code Freeze and Test Freeze"
-      },
-      {
-        "date": "2026-07-30",
-        "label": "Week 11 — KubeCon Japan"
-      },
-      {
-        "date": "2026-08-05",
-        "label": "Week 12 — Docs Freeze"
-      },
-      {
-        "date": "2026-08-26",
-        "label": "Week 15 — Kubernetes v1.37.0 released"
-      }
-    ],
-    "estimated": false,
-    "source": "https://raw.githubusercontent.com/kubernetes/sig-release/master/releases/release-1.37/README.md"
+    "version": "1.38",
+    "releaseDate": "2026-12-26",
+    "projectedMaintenanceStartDate": "2027-12-26",
+    "projectedEolDate": "2028-02-26",
+    "cycleStart": null,
+    "milestones": [],
+    "estimated": true,
+    "source": "https://raw.githubusercontent.com/kubernetes/sig-release/master/releases/release-1.38/README.md"
   },
   "upcomingPatches": [
     {
-      "targetDate": "2026-07-14",
-      "cherryPickDeadline": "2026-07-10"
-    },
-    {
-      "targetDate": "2026-08-11",
-      "cherryPickDeadline": "2026-08-07"
-    },
-    {
       "targetDate": "2026-09-15",
       "cherryPickDeadline": "2026-09-11"
+    },
+    {
+      "targetDate": "2026-10-13",
+      "cherryPickDeadline": "2026-10-09"
+    },
+    {
+      "targetDate": "2026-11-10",
+      "cherryPickDeadline": "2026-11-06"
     }
   ]
 }

@@ -22,8 +22,8 @@ export interface SupportedRelease {
   /** Start of maintenance mode = end of standard ("active") support. */
   maintenanceStartDate: string;
   eolDate: string;
-  /** Most recent already-released patch, if any. */
-  latestPatch: PatchRef | null;
+  /** Latest released version on this branch; x.y.0 until the first patch ships. */
+  latestPatch: PatchRef;
   /** Next scheduled patch, if any. */
   nextPatch: PatchRef | null;
   /** Number of patches released so far. */

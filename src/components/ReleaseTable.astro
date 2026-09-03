@@ -24,7 +24,7 @@ const rows: Row[] = [
     maintenanceStartDate: r.maintenanceStartDate,
     eolDate: r.eolDate,
     releaseExact: true,
-    latest: r.latestPatch ? { version: r.latestPatch.version, date: r.latestPatch.date } : null,
+    latest: { version: r.latestPatch.version, date: r.latestPatch.date },
     isEol: false,
   })),
   ...recentEol.map((r) => ({
@@ -34,7 +34,7 @@ const rows: Row[] = [
     maintenanceStartDate: r.maintenanceStartDate,
     eolDate: r.eolDate,
     releaseExact: r.releaseDateExact,
-    latest: { version: r.finalPatch, date: null },
+    latest: r.finalPatch ? { version: r.finalPatch, date: null } : null,
     isEol: true,
   })),
 ];

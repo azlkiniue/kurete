@@ -207,7 +207,9 @@ function parseSchedule(text: string): {
         .filter((p) => p.release)
         .sort((a, b) => comparePatchDesc(a.release!, b.release!));
 
-      const latestPatch: PatchRef | null = prev[0]
+      // A just-shipped minor has no previousPatches yet, but its initial x.y.0
+      // release *is* the latest released version, cut on the minor's own date.
+      const latestPatch: PatchRef = prev[0]
         ? {
             version: prev[0].release!,
             date: asISO(prev[0].targetDate),
@@ -216,7 +218,7 @@ function parseSchedule(text: string): {
               : {}),
             ...(prev[0].note ? { note: prev[0].note } : {}),
           }
-        : null;
+        : { version: `${s.release!}.0`, date: asISO(s.releaseDate) };
 
       const nextPatch: PatchRef | null = s.next?.release
         ? {
