@@ -156,7 +156,12 @@ const statusLabel: Record<string, string> = {
     background: var(--surface-2);
   }
   .c-release {
+    /* Explicit gap: the version/pill spacing must not depend on source
+       whitespace, which Astro's JSX-aware compressHTML strips. */
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 0.15rem 0.45rem;
   }
   .c-release .ver {
     font-size: 1.02rem;

@@ -143,19 +143,19 @@ const builtDate = snapshot.generatedAt.slice(0, 10);
 
     <footer class="foot">
       <p>
-        Data from the official Kubernetes release schedule —
-        <a href="https://kubernetes.io/releases/" target="_blank" rel="noopener">kubernetes.io/releases</a>
-        (<a href={snapshot.sources.schedule} target="_blank" rel="noopener">schedule.yaml</a>,
-        <a href={snapshot.sources.eol} target="_blank" rel="noopener">eol.yaml</a>,
+        Data from the official Kubernetes release schedule —{' '}
+        <a href="https://kubernetes.io/releases/" target="_blank" rel="noopener">kubernetes.io/releases</a>{' '}
+        (<a href={snapshot.sources.schedule} target="_blank" rel="noopener">schedule.yaml</a>,{' '}
+        <a href={snapshot.sources.eol} target="_blank" rel="noopener">eol.yaml</a>,{' '}
         <a href="https://github.com/kubernetes/sig-release" target="_blank" rel="noopener">sig-release</a>).
         <br>
-        Historical release dates for end-of-life versions courtesy of
-        <a href={snapshot.sources.kubeApi} target="_blank" rel="noopener">kube-api.ninja</a>
+        Historical release dates for end-of-life versions courtesy of{' '}
+        <a href={snapshot.sources.kubeApi} target="_blank" rel="noopener">kube-api.ninja</a>{' '}
         by xrstf
         (<a href="https://codeberg.org/xrstf/kube-api.ninja" target="_blank" rel="noopener">source</a>).
       </p>
       <p class="foot-meta">
-        Snapshot built {formatDate(builtDate)}
+        Snapshot built {formatDate(builtDate)}{' '}
         (<span data-since={builtDate}>{sinceText(builtDate)}</span>){!snapshot.fresh && <span class="stale"> · served from cache</span>}.
         Not affiliated with the Kubernetes project.
       </p>
