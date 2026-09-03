@@ -68,7 +68,7 @@ const statusLabel: Record<string, string> = {
             return (
               <tr class={row.isEol || row.status === 'eol' ? 'is-eol' : ''}>
                 <td class="c-release">
-                  <span class={`ver ${row.isEol || row.status === 'eol' ? 'struck' : ''}`}>{row.version}</span>
+                  <span class={`ver ${row.isEol || row.status === 'eol' ? 'struck' : ''}`}>{row.version}</span>{' '}
                   <span class={`pill pill-${row.status}`}>{statusLabel[row.status]}</span>
                 </td>
                 <td class="c-released">
@@ -156,12 +156,7 @@ const statusLabel: Record<string, string> = {
     background: var(--surface-2);
   }
   .c-release {
-    /* Explicit gap: the version/pill spacing must not depend on source
-       whitespace, which Astro's JSX-aware compressHTML strips. */
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 0.15rem 0.45rem;
   }
   .c-release .ver {
     font-size: 1.02rem;
